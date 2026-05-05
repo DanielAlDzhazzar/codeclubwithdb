@@ -4,7 +4,7 @@ import { getUserFromToken } from '../../lib/auth'
 export async function GET(req: Request) {
   const user = await getUserFromToken(req)
 
-  if (!user) {
+  if (!user || typeof user === 'string') {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
