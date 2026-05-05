@@ -2,18 +2,33 @@
 
 import { useEffect, useState } from 'react'
 
-export default function AdminUsers() {
-  const [users, setUsers] = useState<any[]>([])
+type User = {
+  id: number
+  name: string
+  email: string
+  role: string
+  active: boolean
+}
 
-  const loadUsers = async () => {
-    const res = await fetch('/api/admin/users')
-    const text = await res.text()
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([])
 
+  async function loadUsers() {
     try {
-      setUsers(JSON.parse(text))
-    } catch {
-      console.error('NOT JSON:', text)
-      alert('Failed to load users')
+      const res = await fetch('/api/admin/users')
+
+      if (!res.ok) {
+        const text = await res.text()
+        console.error('NOT JSON:', text)
+        alert('Server error')
+        return
+      }
+
+      const data = await res.json()
+      setUsers(data)
+    } catch (err) {
+      console.error(err)
+      alert('Failed request')
     }
   }
 
@@ -22,69 +37,50 @@ export default function AdminUsers() {
   }, [])
 
   const updateUser = async (id: number, role: string, active: boolean) => {
-    const res = await fetch('/api/admin/users', {
+    const res = await fetch('/api/admin/users/update', {
       method: 'POST',
       body: JSON.stringify({ id, role, active })
     })
 
-    const text = await res.text()
+    const data = await res.json()
 
-    try {
-      const data = JSON.parse(text)
-      if (!data.success) throw new Error()
-      alert('Updated')
+    if (data.success) {
       loadUsers()
-    } catch {
-      console.error('NOT JSON:', text)
-      alert('Update failed')
+    } else {
+      alert(data.error)
     }
   }
 
   return (
-    <main className="p-6">
+    <main className="flex flex-col p-4 rounded-lg text-black" style={{ backgroundColor: '#F8F8F8' }}>
       <h1 className="text-2xl mb-4">Manage Users</h1>
 
-      {users.map(user => (
-        <div
-          key={user.id}
-          className="border border-black p-3 mb-3 rounded bg-gray-100"
-        >
-          <p><b>ID:</b> {user.id}</p>
-          <p><b>Name:</b> {user.name}</p>
-          <p><b>Email:</b> {user.email}</p>
+      {users.map(u => (
+        <div key={u.id} className="border p-3 mb-3">
 
-          <div className="mt-2">
-            <label>Role</label>
-            <select
-              defaultValue={user.role}
-              onChange={(e) =>
-                updateUser(user.id, e.target.value, user.active)
-              }
-              className="ml-2 border p-1"
-            >
-              <option value="ninja">ninja</option>
-              <option value="parent">parent</option>
-              <option value="admin">admin</option>
-            </select>
-          </div>
+          <p>{u.id} - {u.name} ({u.email})</p>
 
-          <div className="mt-2">
-            <label>Active</label>
-            <select
-              defaultValue={String(user.active)}
-              onChange={(e) =>
-                updateUser(
-                  user.id,
-                  user.role,
-                  e.target.value === 'true'
-                )
-              }
-              className="ml-2 border p-1"
-            >
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
-          </div>
+          <select
+            defaultValue={u.role}
+            onChange={(e) => updateUser(u.id, e.target.value, u.active)}
+            className="border p-1 mr-2"
+          >
+            <option value="ninja">ninja</option>
+            <option value="parent">parent</option>
+            <option value="admin">admin</option>
+          </select>
+
+          <select
+            defaultValue={String(u.active)}
+            onChange={(e) =>
+              updateUser(u.id, u.role, e.target.value === 'true')
+            }
+            className="border p-1"
+          >
+            <option value="true">active</option>
+            <option value="false">dormant</option>
+          </select>
+
         </div>
       ))}
     </main>
