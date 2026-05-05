@@ -27,8 +27,8 @@ export async function POST(req: Request) {
 
   for (const t of tickets) {
   await query(
-    `INSERT INTO event_technologies (event_id, technology_id, slots, room)
-     VALUES ($1, $2, $3, $4)`,
+    `INSERT INTO event_technologies (event_id, technology_id, total_slots, remaining_slots, room)
+     VALUES ($1, $2, $3, $3, $4)`,
     [eventId, t.technology_id, t.total_slots, t.room]
   )
 }

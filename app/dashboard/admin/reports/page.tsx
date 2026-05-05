@@ -25,10 +25,10 @@ export default async function Reports() {
       u.name,
       u.gender,
       u.dob,
-      t.name as technology
+      m.name as technology
     FROM bookings b
     JOIN event_technologies et ON b.event_technology_id = et.id
-    JOIN technologies t ON et.technology_id = t.id
+    JOIN main m ON et.technology_id = m.id
     JOIN users u ON b.ninja_id = u.id
   `)
 
