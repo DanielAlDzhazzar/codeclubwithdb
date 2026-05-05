@@ -38,7 +38,7 @@ async function getTitleById(id: number): Promise<Title | null> {
 
 export default async function Dashboard() {
   const cards = await getMainCards()
-  const title = await getTitleById(1)
+  const title = await getTitleById(4)
 
   return (
     <main>
